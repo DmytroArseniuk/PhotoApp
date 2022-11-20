@@ -3,6 +3,8 @@ package com.arsars.photoapp.photos.list
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.arsars.photoapp.data.Photo
@@ -12,13 +14,17 @@ import java.util.*
 class PhotosAdapter(private val photoClickedListener: (UUID) -> Unit) :
     RecyclerView.Adapter<PhotosAdapter.PhotoVH>() {
 
-    private var photos: ArrayList<Photo> = ArrayList()
+    private val differCallback = object : DiffUtil.ItemCallback<Photo>() {
+        override fun areItemsTheSame(oldItem: Photo, newItem: Photo): Boolean {
+            return oldItem.id == newItem.id
+        }
 
-    fun updateList(items: List<Photo>) {
-        photos.clear()
-        photos.addAll(items)
-        notifyDataSetChanged()
+        override fun areContentsTheSame(oldItem: Photo, newItem: Photo): Boolean {
+            return oldItem == newItem
+        }
     }
+
+    val differ = AsyncListDiffer(this, differCallback)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoVH {
         val binding =
@@ -27,12 +33,12 @@ class PhotosAdapter(private val photoClickedListener: (UUID) -> Unit) :
     }
 
     override fun onBindViewHolder(holder: PhotoVH, position: Int) {
-        holder.bind(photos[position], photoClickedListener)
+        holder.bind(differ.currentList[position], photoClickedListener)
     }
 
-    override fun getItemCount() = photos.size
+    override fun getItemCount() = differ.currentList.size
 
-    override fun getItemId(position: Int) = photos[position].id.mostSignificantBits
+    override fun getItemId(position: Int) = differ.currentList[position].id.mostSignificantBits
 
     class PhotoVH(private val binding: PhotoPreviewBinding) : ViewHolder(binding.root) {
 

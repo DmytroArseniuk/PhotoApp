@@ -71,7 +71,7 @@ class PhotosFragment : Fragment() {
 
         lifecycleScope.launchWhenResumed {
             viewModel.state.collect {
-                adapter.updateList(it.list)
+                adapter.differ.submitList(it.list)
             }
         }
     }

@@ -8,17 +8,36 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
+import com.arsars.photoapp.R
+import com.arsars.photoapp.ServiceLocator
 import com.arsars.photoapp.base.SimpleViewModelFactory
 import com.arsars.photoapp.databinding.FragmentLoginBinding
 import com.arsars.photoapp.login.usecases.LoginUseCase
+import com.arsars.photoapp.login.usecases.RegisterUseCase
 import com.arsars.photoapp.utils.hideKeyboard
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 
 class LoginFragment : Fragment() {
 
-    val viewModel: LoginViewModel by viewModels(factoryProducer = {
+    private val viewModel: LoginViewModel by viewModels(factoryProducer = {
         SimpleViewModelFactory {
-            LoginViewModel(LoginUseCase())
+            val dispatcher = Dispatchers.IO
+            LoginViewModel(
+                AuthInteractor(
+                    ServiceLocator.userPreferences,
+                    LoginUseCase(
+                        ServiceLocator.userPreferences,
+                        ServiceLocator.cryptoManager,
+                        dispatcher
+                    ),
+                    RegisterUseCase(
+                        ServiceLocator.userPreferences,
+                        ServiceLocator.cryptoManager,
+                        dispatcher
+                    )
+                )
+            )
         }
     })
     var binding: FragmentLoginBinding? = null
@@ -50,7 +69,8 @@ class LoginFragment : Fragment() {
             viewModel.event.collect {
                 when (it) {
                     is LoginViewModel.Event.Error -> binding?.apply {
-                        Snackbar.make(root, it.message, Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(root, R.string.incorrect_password, Snackbar.LENGTH_SHORT)
+                            .show()
                     }
                     LoginViewModel.Event.SuccessfulLogin -> binding?.apply {
                         Navigation.findNavController(root)

@@ -2,12 +2,13 @@ package com.arsars.photoapp.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.arsars.photoapp.login.usecases.LoginUseCase
 import com.arsars.photoapp.utils.emitState
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
+class LoginViewModel(
+    private val authInteractor: AuthInteractor
+) : ViewModel() {
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
@@ -21,14 +22,14 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
             _state.emitState {
                 copy(loading = true)
             }
-            val loggedIn = loginUseCase.login(password)
-            val event = if (loggedIn) {
+
+            val event = if (authInteractor.execute(password)) {
                 Event.SuccessfulLogin
             } else {
                 _state.emitState {
                     copy(loading = false)
                 }
-                Event.Error("Incorrect password")
+                Event.Error
             }
             _event.emit(event)
         }
@@ -40,7 +41,7 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
 
     sealed class Event {
         object SuccessfulLogin : Event()
-        data class Error(val message: String) : Event()
+        object Error : Event()
     }
 
 }

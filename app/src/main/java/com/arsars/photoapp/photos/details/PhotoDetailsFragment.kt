@@ -1,16 +1,30 @@
 package com.arsars.photoapp.photos.details
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
+import com.arsars.photoapp.ServiceLocator
+import com.arsars.photoapp.base.SimpleViewModelFactory
 import com.arsars.photoapp.databinding.FragmentPhotoDetailsBinding
+import kotlinx.coroutines.Dispatchers
 
 class PhotoDetailsFragment : Fragment() {
 
-    private val viewModel: PhotoDetailsViewModel by viewModels()
+    private val args: PhotoDetailsFragmentArgs by navArgs()
+    private val viewModel: PhotoDetailsViewModel by viewModels(factoryProducer = {
+        SimpleViewModelFactory {
+            PhotoDetailsViewModel(
+                ServiceLocator.photosRepository,
+                Dispatchers.IO
+            )
+        }
+    })
     private var binding: FragmentPhotoDetailsBinding? = null
 
     override fun onCreateView(
@@ -23,6 +37,18 @@ class PhotoDetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        lifecycleScope.launchWhenResumed {
+            viewModel.state.collect {
+                it.photo?.apply {
+                    decodedByteArray.let { byteArray ->
+                        binding?.photo?.setImageBitmap(
+                            BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                        )
+                    }
+                }
+            }
+        }
+        viewModel.load(args.photoId)
     }
 
     override fun onDestroyView() {

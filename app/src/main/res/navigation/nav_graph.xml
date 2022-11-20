@@ -23,20 +23,18 @@
         android:label="fragment_photos"
         tools:layout="@layout/fragment_photos">
         <action
-            android:id="@+id/action_photosFragment_to_cameraFragment"
-            app:destination="@id/cameraFragment" />
-        <action
             android:id="@+id/action_photosFragment_to_photoDetailsFragment"
             app:destination="@id/photoDetailsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/cameraFragment"
-        android:name="com.arsars.photoapp.camera.CameraFragment"
-        android:label="fragment_camera"
-        tools:layout="@layout/fragment_camera" />
-    <fragment
         android:id="@+id/photoDetailsFragment"
         android:name="com.arsars.photoapp.photos.details.PhotoDetailsFragment"
         android:label="fragment_photo_details"
-        tools:layout="@layout/fragment_photo_details" />
+        tools:layout="@layout/fragment_photo_details" >
+        <argument
+            android:name="photoId"
+            app:argType="string"
+            app:nullable="false"
+            />
+    </fragment>
 </navigation>

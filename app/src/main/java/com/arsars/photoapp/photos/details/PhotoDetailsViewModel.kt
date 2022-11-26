@@ -1,9 +1,11 @@
 package com.arsars.photoapp.photos.details
 
+import android.graphics.drawable.BitmapDrawable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.arsars.photoapp.data.Photo
 import com.arsars.photoapp.data.PhotosRepository
+import com.arsars.photoapp.photos.list.PhotoLoader
 import com.arsars.photoapp.utils.emitState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +16,7 @@ import kotlin.coroutines.CoroutineContext
 
 class PhotoDetailsViewModel(
     private val photosRepository: PhotosRepository,
+    private val photoLoader: PhotoLoader,
     private val dispatcher: CoroutineContext
 ) : ViewModel() {
 
@@ -22,15 +25,17 @@ class PhotoDetailsViewModel(
 
     fun load(photoId: String) {
         viewModelScope.launch(dispatcher) {
-            val loadPhoto = photosRepository.loadPhoto(UUID.fromString(photoId))
+            val photo = photosRepository.loadPhoto(UUID.fromString(photoId))
+            val load = photoLoader.load(photo)
             _state.emitState {
-                copy(photo = loadPhoto)
+                copy(photo = photo, bitmapDrawable = load)
             }
         }
     }
 
     data class State(
-        val photo: Photo? = null
+        val photo: Photo? = null,
+        val bitmapDrawable: BitmapDrawable? = null
     )
 
 }

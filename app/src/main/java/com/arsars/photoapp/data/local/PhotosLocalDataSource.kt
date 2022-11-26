@@ -6,6 +6,8 @@ import android.media.ThumbnailUtils
 import com.arsars.photoapp.crypto.CryptoManager
 import com.arsars.photoapp.data.Photo
 import com.arsars.photoapp.utils.FileUtil
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -13,10 +15,11 @@ import java.util.*
 
 class PhotosLocalDataSource(
     private val fileUtil: FileUtil,
-    private val cryptoManager: CryptoManager
+    private val cryptoManager: CryptoManager,
+    private val dispatcher: CoroutineDispatcher
 ) {
 
-    fun createPhoto(id: UUID, file: File, thumbSize: Int) {
+    suspend fun createPhoto(id: UUID, file: File, thumbSize: Int) {
         try {
             ThumbnailUtils.extractThumbnail(
                 BitmapFactory.decodeFile(file.path), thumbSize, thumbSize
@@ -40,8 +43,7 @@ class PhotosLocalDataSource(
                 val file = File(photoDir, it)
                 Photo(
                     id = UUID.fromString(it.substring(THUMB_PREFIX.length)),
-                    file = file,
-                    decodedByteArray = cryptoManager.decrypt(file.readBytes())
+                    file = file
                 )
             } ?: emptyList()
     }
@@ -50,23 +52,26 @@ class PhotosLocalDataSource(
         val file = fileUtil.createFile(uuid, IMAGE_PREFIX)
         return Photo(
             id = uuid,
-            file = file,
-            decodedByteArray = cryptoManager.decrypt(file.readBytes())
+            file = file
         )
     }
 
-    private fun compressThumb(thumb: Bitmap): ByteArray {
-        return ByteArrayOutputStream().use {
-            thumb.compress(Bitmap.CompressFormat.JPEG, COMPRESSED_QUALITY, it)
-            val thumbByteArray: ByteArray = it.toByteArray()
-            thumb.recycle()
-            return@use thumbByteArray
+    private suspend fun compressThumb(thumb: Bitmap): ByteArray {
+        return withContext(dispatcher) {
+            ByteArrayOutputStream().use {
+                thumb.compress(Bitmap.CompressFormat.JPEG, COMPRESSED_QUALITY, it)
+                val thumbByteArray: ByteArray = it.toByteArray()
+                thumb.recycle()
+                return@use thumbByteArray
+            }
         }
     }
 
-    private fun writeByteArrayToFile(file: File, byteArray: ByteArray) {
-        file.outputStream().use {
-            it.write(byteArray)
+    private suspend fun writeByteArrayToFile(file: File, byteArray: ByteArray) {
+        withContext(dispatcher) {
+            file.outputStream().use {
+                it.write(byteArray)
+            }
         }
     }
 

@@ -9,10 +9,16 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.arsars.photoapp.data.Photo
 import com.arsars.photoapp.databinding.PhotoPreviewBinding
+import kotlinx.coroutines.*
 import java.util.*
 
-class PhotosAdapter(private val photoClickedListener: (UUID) -> Unit) :
+class PhotosAdapter(
+    private val photoLoader: PhotoLoader,
+    private val photoClickedListener: (UUID) -> Unit
+) :
     RecyclerView.Adapter<PhotosAdapter.PhotoVH>() {
+
+    val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     private val differCallback = object : DiffUtil.ItemCallback<Photo>() {
         override fun areItemsTheSame(oldItem: Photo, newItem: Photo): Boolean {
@@ -29,7 +35,7 @@ class PhotosAdapter(private val photoClickedListener: (UUID) -> Unit) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoVH {
         val binding =
             PhotoPreviewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoVH(binding)
+        return PhotoVH(binding, photoLoader, scope)
     }
 
     override fun onBindViewHolder(holder: PhotoVH, position: Int) {
@@ -40,17 +46,22 @@ class PhotosAdapter(private val photoClickedListener: (UUID) -> Unit) :
 
     override fun getItemId(position: Int) = differ.currentList[position].id.mostSignificantBits
 
-    class PhotoVH(private val binding: PhotoPreviewBinding) : ViewHolder(binding.root) {
-
+    class PhotoVH(
+        private val binding: PhotoPreviewBinding,
+        private val photoLoader: PhotoLoader,
+        private val coroutineScope: CoroutineScope
+    ) :
+        ViewHolder(binding.root) {
         fun bind(photo: Photo, clickListener: (UUID) -> Unit) {
-            binding.preview.setImageBitmap(
-                BitmapFactory.decodeByteArray(
-                    photo.decodedByteArray,
-                    0,
-                    photo.decodedByteArray.size
-                )
-            )
-            binding.preview.setOnClickListener { clickListener(photo.id) }
+            coroutineScope.launch {
+                val bitmap = photoLoader.load(photo)
+
+                withContext(Dispatchers.Main) {
+                    binding.preview.setImageDrawable(bitmap)
+                    binding.preview.setOnClickListener { clickListener(photo.id) }
+                }
+            }
+
         }
     }
 

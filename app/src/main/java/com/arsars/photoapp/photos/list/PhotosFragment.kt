@@ -29,7 +29,7 @@ class PhotosFragment : Fragment() {
         }
     })
     private var binding: FragmentPhotosBinding? = null
-    private var adapter = PhotosAdapter { photoId ->
+    private var adapter = PhotosAdapter(ServiceLocator.photoLoader) { photoId ->
         binding?.apply {
             Navigation.findNavController(root)
                 .navigate(

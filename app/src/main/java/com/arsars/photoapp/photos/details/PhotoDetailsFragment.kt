@@ -1,6 +1,5 @@
 package com.arsars.photoapp.photos.details
 
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +20,7 @@ class PhotoDetailsFragment : Fragment() {
         SimpleViewModelFactory {
             PhotoDetailsViewModel(
                 ServiceLocator.photosRepository,
+                ServiceLocator.photoLoader,
                 Dispatchers.IO
             )
         }
@@ -39,12 +39,8 @@ class PhotoDetailsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launchWhenResumed {
             viewModel.state.collect {
-                it.photo?.apply {
-                    decodedByteArray.let { byteArray ->
-                        binding?.photo?.setImageBitmap(
-                            BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                        )
-                    }
+                it.bitmapDrawable?.apply {
+                    binding?.photo?.setImageDrawable(this)
                 }
             }
         }

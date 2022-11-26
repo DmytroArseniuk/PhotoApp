@@ -85,26 +85,25 @@ class PhotoLoader(
 
     suspend fun load(photo: Photo): BitmapDrawable {
         return withContext(Dispatchers.Default) {
-            val cachedPhoto = cache.firstOrNull { (id, _) -> id == photo.id.toString() }?.second
-            val byteArray = if (cachedPhoto != null) {
-                cachedPhoto
-            } else {
-                val decrypt = cryptoManager.decrypt(photo.file.readBytes())
-
-                if (cache.size > CACHE_SIZE) {
-                    cache.removeAt(0)
-                }
-                cache.add(photo.id.toString() to decrypt)
-
-                decrypt
-            }
-
-
             val cachedBitmap = memoryCache.get(photo.id.toString())
 
             return@withContext if (cachedBitmap != null) {
                 cachedBitmap
             } else {
+                val cachedPhoto = cache.firstOrNull { (id, _) -> id == photo.id.toString() }?.second
+                val byteArray = if (cachedPhoto != null) {
+                    cachedPhoto
+                } else {
+                    val decrypt = cryptoManager.decrypt(photo.file.readBytes())
+
+                    if (cache.size > CACHE_SIZE) {
+                        cache.removeAt(0)
+                    }
+                    cache.add(photo.id.toString() to decrypt)
+
+                    decrypt
+                }
+
                 val decodeSampledBitmapByteArray = decodeSampledBitmapByteArray(byteArray)
                 val bitmapDrawable = BitmapDrawable(resources, decodeSampledBitmapByteArray)
                 memoryCache.put(photo.id.toString(), bitmapDrawable)

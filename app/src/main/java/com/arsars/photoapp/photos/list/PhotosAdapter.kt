@@ -1,6 +1,5 @@
 package com.arsars.photoapp.photos.list
 
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
@@ -53,7 +52,8 @@ class PhotosAdapter(
     ) :
         ViewHolder(binding.root) {
         fun bind(photo: Photo, clickListener: (UUID) -> Unit) {
-            coroutineScope.launch {
+            (binding.preview.getTag() as Job?)?.cancel()
+            val job = coroutineScope.launch(Job()) {
                 val bitmap = photoLoader.load(photo)
 
                 withContext(Dispatchers.Main) {
@@ -61,7 +61,7 @@ class PhotosAdapter(
                     binding.preview.setOnClickListener { clickListener(photo.id) }
                 }
             }
-
+            binding.preview.setTag(job)
         }
     }
 

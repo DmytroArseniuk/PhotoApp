@@ -10,16 +10,16 @@ import com.arsars.photoapp.data.TemporaryPhotoContainer
 import com.arsars.photoapp.photos.list.usecases.CreateTempPhotoContainer
 import com.arsars.photoapp.utils.emitState
 import com.arsars.photoapp.utils.getScreenWidth
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 
 class PhotosViewModel(
     private val createTempPhotoContainer: CreateTempPhotoContainer,
     private val repository: PhotosRepository,
-    private val dispatcher: CoroutineContext
+    private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(State())

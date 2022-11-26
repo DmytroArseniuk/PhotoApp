@@ -28,14 +28,13 @@ class LoginFragment : Fragment() {
                     ServiceLocator.userPreferences,
                     LoginUseCase(
                         ServiceLocator.userPreferences,
-                        ServiceLocator.cryptoManager,
                         dispatcher
                     ),
                     RegisterUseCase(
                         ServiceLocator.userPreferences,
-                        ServiceLocator.cryptoManager,
                         dispatcher
-                    )
+                    ),
+                    ServiceLocator.cryptoManager
                 )
             )
         }

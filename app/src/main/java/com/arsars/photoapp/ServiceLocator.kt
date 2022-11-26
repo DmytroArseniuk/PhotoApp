@@ -21,7 +21,7 @@ object ServiceLocator {
 
     fun init(context: Context) {
         userPreferences = UserPreferences(PreferenceHelper(context))
-        cryptoManager = CryptoManager(Dispatchers.Default)
+        cryptoManager = CryptoManager(userPreferences, Dispatchers.Default)
         photoLoader = PhotoLoader(context.resources, cryptoManager)
         fileUtil = FileUtil(context)
         localDataSource = PhotosLocalDataSource(fileUtil, cryptoManager, Dispatchers.IO)

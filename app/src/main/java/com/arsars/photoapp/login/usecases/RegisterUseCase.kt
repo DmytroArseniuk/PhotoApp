@@ -1,16 +1,13 @@
 package com.arsars.photoapp.login.usecases
 
-import com.arsars.photoapp.crypto.CryptoManager
-import com.arsars.photoapp.data.preferences.PreferenceHelper
 import com.arsars.photoapp.data.preferences.UserPreferences
-import com.arsars.photoapp.utils.base64toString
+import com.arsars.photoapp.utils.getSha256Hash
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
 class RegisterUseCase(
     private val userPreferences: UserPreferences,
-    private val cryptoManager: CryptoManager,
-    private val dispatcher: CoroutineContext
+    private val dispatcher: CoroutineDispatcher
 ) {
 
     /**
@@ -18,8 +15,7 @@ class RegisterUseCase(
      */
     suspend fun execute(password: String) {
         withContext(dispatcher) {
-            val encrypted = cryptoManager.encrypt(password.toByteArray())
-            userPreferences.savePassword(encrypted.base64toString())
+            userPreferences.savePasswordHash(password.getSha256Hash())
         }
     }
 }

@@ -8,6 +8,7 @@ import android.util.DisplayMetrics
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.security.MessageDigest
 
 
 suspend inline fun <reified T> MutableStateFlow<T>.emitState(action: T.() -> T) {
@@ -42,6 +43,17 @@ fun Activity?.hideKeyboard() {
                 hideSoftInputFromWindow(it.windowToken, 0)
             }
         }
+    }
+}
+
+fun String.getSha256Hash(): String? {
+    return try {
+        return MessageDigest.getInstance("SHA-256").apply {
+            reset()
+        }.digest(toByteArray())
+            .base64toString()
+    } catch (ex: Exception) {
+        null
     }
 }
 

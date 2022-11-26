@@ -7,17 +7,17 @@ import com.arsars.photoapp.data.Photo
 import com.arsars.photoapp.data.PhotosRepository
 import com.arsars.photoapp.photos.list.PhotoLoader
 import com.arsars.photoapp.utils.emitState
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 
 class PhotoDetailsViewModel(
     private val photosRepository: PhotosRepository,
     private val photoLoader: PhotoLoader,
-    private val dispatcher: CoroutineContext
+    private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(State())
